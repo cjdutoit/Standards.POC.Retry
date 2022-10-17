@@ -24,12 +24,19 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 
             return sharedValidations;
         }
-
+        
         private void ValidateStudentOnAdd(Student student)
         {
             ValidateStudentIsNotNull(student);
 
-            Validate(SharedValidations(student));
+            Validate(
+                SharedValidations(student),
+
+                (Rule: IsNotSame(
+                    firstDate: student.UpdatedDate,
+                    secondDate: student.CreatedDate,
+                    secondDateName: nameof(Student.CreatedDate)),
+                Parameter: nameof(Student.UpdatedDate)));
         }
 
         private static void ValidateStudentIsNotNull(Student student)
@@ -58,6 +65,15 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
             Message = "Date is required"
         };
 
+        private static dynamic IsNotSame(
+            DateTimeOffset firstDate,
+            DateTimeOffset secondDate,
+            string secondDateName) => new
+            {
+                Condition = firstDate != secondDate,
+                Message = $"Date is not the same as {secondDateName}"
+            };
+
         private static void Validate(
             IEnumerable<(dynamic Rule, string Parameter)> sharedValidations,
             params (dynamic Rule, string Parameter)[] validations)
@@ -68,7 +84,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 
             Validate(allValidations.ToArray());
         }
-
+        
         private static void Validate(params (dynamic Rule, string Parameter)[] validations)
         {
             var invalidStudentException = new InvalidStudentException();
