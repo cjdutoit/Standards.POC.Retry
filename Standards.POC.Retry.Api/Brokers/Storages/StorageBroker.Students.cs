@@ -18,5 +18,8 @@ namespace Standards.POC.Retry.Api.Brokers.Storages
 
         public async ValueTask<Student> SelectStudentByIdAsync(Guid studentId) =>
             await SelectAsync<Student>(studentId);
+
+        public async ValueTask<Student> UpdateStudentAsync(Student student) =>
+            await UpdateAsync(student);
     }
 }
