@@ -51,7 +51,14 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
         {
             ValidateStudentIsNotNull(student);
 
-            Validate(SharedValidations(student));
+            Validate(
+                SharedValidations(student),
+
+                (Rule: IsSame(
+                    firstDate: student.UpdatedDate,
+                    secondDate: student.CreatedDate,
+                    secondDateName: nameof(Student.CreatedDate)),
+                Parameter: nameof(Student.UpdatedDate)));
         }
 
         public void ValidateStudentId(Guid studentId) =>
@@ -90,6 +97,15 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
             Condition = date == default,
             Message = "Date is required"
         };
+
+        private static dynamic IsSame(
+            DateTimeOffset firstDate,
+            DateTimeOffset secondDate,
+            string secondDateName) => new
+            {
+                Condition = firstDate == secondDate,
+                Message = $"Date is the same as {secondDateName}"
+            };
 
         private static dynamic IsNotSame(
             DateTimeOffset firstDate,
