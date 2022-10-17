@@ -50,6 +50,8 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
         private void ValidateStudentOnModify(Student student)
         {
             ValidateStudentIsNotNull(student);
+
+            Validate(SharedValidations(student));
         }
 
         public void ValidateStudentId(Guid studentId) =>
