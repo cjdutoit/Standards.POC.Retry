@@ -58,7 +58,9 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
                     firstDate: student.UpdatedDate,
                     secondDate: student.CreatedDate,
                     secondDateName: nameof(Student.CreatedDate)),
-                Parameter: nameof(Student.UpdatedDate)));
+                Parameter: nameof(Student.UpdatedDate)),
+
+                (Rule: IsNotRecent(student.UpdatedDate), Parameter: nameof(student.UpdatedDate)));
         }
 
         public void ValidateStudentId(Guid studentId) =>
