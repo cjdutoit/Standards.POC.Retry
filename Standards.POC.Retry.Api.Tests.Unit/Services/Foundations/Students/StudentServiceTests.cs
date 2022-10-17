@@ -1,8 +1,15 @@
+// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
 using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using Standards.POC.Retry.Api.Brokers.DateTimes;
 using Standards.POC.Retry.Api.Brokers.Loggings;
@@ -36,6 +43,18 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
 
         private static Expression<Func<Xeption, bool>> SameExceptionAs(Xeption expectedException) =>
             actualException => actualException.SameExceptionAs(expectedException);
+
+        public static TheoryData AllowedRetryExceptions()
+        {
+            var dbUpdateConcurrencyException = new DbUpdateConcurrencyException(GetRandomMessage());
+            var dbUpdateException = new DbUpdateException(GetRandomMessage());
+
+            return new TheoryData<Exception>
+            {
+                dbUpdateConcurrencyException,
+                dbUpdateException
+            };
+        }
 
         private static string GetRandomMessage() =>
             new MnemonicString(wordCount: GetRandomNumber()).GetValue();

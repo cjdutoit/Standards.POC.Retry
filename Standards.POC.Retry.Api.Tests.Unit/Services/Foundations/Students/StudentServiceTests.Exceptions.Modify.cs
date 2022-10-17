@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
 using System;
 using System.Threading.Tasks;
 using EFxceptions.Models.Exceptions;
@@ -270,5 +276,116 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
             this.storageBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
+
+        [Fact]
+        public async Task ShouldRetryThenThrowDependencyExceptionOnModifyIfDatabaseUpdateExceptionOccursAndLogItAsync()
+        {
+            // given
+            Student randomStudent = CreateRandomStudent();
+            var databaseUpdateException = new DbUpdateException();
+
+            var failedStudentStorageException =
+                new FailedStudentStorageException(databaseUpdateException);
+
+            var expectedStudentDependencyException =
+                new StudentDependencyException(failedStudentStorageException);
+
+            this.dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Throws(databaseUpdateException);
+
+            // when
+            ValueTask<Student> modifyStudentTask =
+                this.studentService.ModifyStudentAsync(randomStudent);
+
+            StudentDependencyException actualStudentDependencyException =
+                await Assert.ThrowsAsync<StudentDependencyException>(
+                    modifyStudentTask.AsTask);
+
+            // then
+            actualStudentDependencyException.Should()
+                .BeEquivalentTo(expectedStudentDependencyException);
+
+            this.dateTimeBrokerMock.Verify(broker =>
+                broker.GetCurrentDateTimeOffset(),
+                    Times.Exactly(3));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
+                        Times.Exactly(3));
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.SelectStudentByIdAsync(randomStudent.Id),
+                    Times.Never);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedStudentDependencyException))),
+                        Times.Once);
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.UpdateStudentAsync(randomStudent),
+                    Times.Never);
+
+            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            this.storageBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldRetryThenThrowDependencyValidationExceptionOnModifyIfDbUpdateConcurrencyErrorOccursAndLogAsync()
+        {
+            // given
+            Student randomStudent = CreateRandomStudent();
+            var databaseUpdateConcurrencyException = new DbUpdateConcurrencyException();
+
+            var lockedStudentException =
+                new LockedStudentException(databaseUpdateConcurrencyException);
+
+            var expectedStudentDependencyValidationException =
+                new StudentDependencyValidationException(lockedStudentException);
+
+            this.dateTimeBrokerMock.Setup(broker =>
+                broker.GetCurrentDateTimeOffset())
+                    .Throws(databaseUpdateConcurrencyException);
+
+            // when
+            ValueTask<Student> modifyStudentTask =
+                this.studentService.ModifyStudentAsync(randomStudent);
+
+            StudentDependencyValidationException actualStudentDependencyValidationException =
+                await Assert.ThrowsAsync<StudentDependencyValidationException>(
+                    modifyStudentTask.AsTask);
+
+            // then
+            actualStudentDependencyValidationException.Should()
+                .BeEquivalentTo(expectedStudentDependencyValidationException);
+
+            this.dateTimeBrokerMock.Verify(broker =>
+                broker.GetCurrentDateTimeOffset(),
+                    Times.Exactly(3));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
+                        Times.Exactly(3));
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.SelectStudentByIdAsync(randomStudent.Id),
+                    Times.Never);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedStudentDependencyValidationException))),
+                        Times.Once);
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.UpdateStudentAsync(randomStudent),
+                    Times.Never);
+
+            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+            this.storageBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
     }
 }

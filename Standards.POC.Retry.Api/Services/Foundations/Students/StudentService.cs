@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,9 +33,12 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
         public ValueTask<Student> AddStudentAsync(Student student) =>
             TryCatch(async () =>
             {
-                ValidateStudentOnAdd(student);
+                return await WithRetry(async () =>
+                {
+                    ValidateStudentOnAdd(student);
 
-                return await this.storageBroker.InsertStudentAsync(student);
+                    return await this.storageBroker.InsertStudentAsync(student);
+                });
             });
 
         public IQueryable<Student> RetrieveAllStudents() =>

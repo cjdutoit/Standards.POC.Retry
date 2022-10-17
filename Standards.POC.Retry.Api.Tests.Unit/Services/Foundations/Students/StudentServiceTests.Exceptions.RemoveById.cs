@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -192,6 +198,59 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
                 broker.LogError(It.Is(SameExceptionAs(
                     expectedStudentServiceException))),
                         Times.Once);
+
+            this.storageBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+            this.dateTimeBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldRetryThenThrowDependencyValidationOnRemoveIfDbUpdateConcurrencyErrorAndLogItAsync()
+        {
+            // given
+            Guid someStudentId = Guid.NewGuid();
+
+            var databaseUpdateConcurrencyException =
+                new DbUpdateConcurrencyException();
+
+            var lockedStudentException =
+                new LockedStudentException(databaseUpdateConcurrencyException);
+
+            var expectedStudentDependencyValidationException =
+                new StudentDependencyValidationException(lockedStudentException);
+
+            this.storageBrokerMock.Setup(broker =>
+                broker.SelectStudentByIdAsync(It.IsAny<Guid>()))
+                    .ThrowsAsync(databaseUpdateConcurrencyException);
+
+            // when
+            ValueTask<Student> removeStudentByIdTask =
+                this.studentService.RemoveStudentByIdAsync(someStudentId);
+
+            StudentDependencyValidationException actualStudentDependencyValidationException =
+                await Assert.ThrowsAsync<StudentDependencyValidationException>(
+                    removeStudentByIdTask.AsTask);
+
+            // then
+            actualStudentDependencyValidationException.Should()
+                .BeEquivalentTo(expectedStudentDependencyValidationException);
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.SelectStudentByIdAsync(It.IsAny<Guid>()),
+                    Times.Exactly(3));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
+                        Times.Exactly(3));
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogError(It.Is(SameExceptionAs(
+                    expectedStudentDependencyValidationException))),
+                        Times.Once);
+
+            this.storageBrokerMock.Verify(broker =>
+                broker.DeleteStudentAsync(It.IsAny<Student>()),
+                    Times.Never);
 
             this.storageBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
