@@ -15,5 +15,8 @@ namespace Standards.POC.Retry.Api.Brokers.Storages
             await InsertAsync(student);
 
         public IQueryable<Student> SelectAllStudents()=> SelectAll<Student>();
+
+        public async ValueTask<Student> SelectStudentByIdAsync(Guid studentId) =>
+            await SelectAsync<Student>(studentId);
     }
 }
