@@ -2,10 +2,10 @@ name: .Net
 on:
   push:
     branches:
-    -  users/cjdutoit/brokers-loggers-logcritical
+    -  main
   pull_request:
     branches:
-    -  users/cjdutoit/brokers-loggers-logcritical
+    -  main
 jobs:
   build:
     runs-on: windows-latest
