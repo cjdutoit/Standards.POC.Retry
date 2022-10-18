@@ -35,9 +35,9 @@ namespace Standards.POC.Retry.Api
             services.AddLogging();
             services.AddControllers().AddOData(options =>
             {
-                options
-                .AddRouteComponents("odata", GetEdmModel())
-                .Select().Filter().Expand().OrderBy().Count().SetMaxTop(25);
+                options.EnableAttributeRouting = true;
+                options.Select().Filter().Expand().OrderBy().Count().SetMaxTop(25);
+                options.AddRouteComponents("odata", GetEdmModel());
             });
 
             services.AddDbContext<StorageBroker>();
