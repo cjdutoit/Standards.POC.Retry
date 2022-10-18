@@ -10,7 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Standards.POC.Retry.Api.Brokers.DateTimes;
+using Standards.POC.Retry.Api.Brokers.Loggings;
 using Standards.POC.Retry.Api.Brokers.Storages;
+using Standards.POC.Retry.Api.Services.Foundations.Students;
 
 namespace Standards.POC.Retry.Api
 {
@@ -54,10 +57,14 @@ namespace Standards.POC.Retry.Api
 
         private static void AddServices(IServiceCollection services)
         {
+            services.AddTransient<IDateTimeBroker, DateTimeBroker>();
+            services.AddTransient<ILoggingBroker, LoggingBroker>();
+            services.AddTransient<IStorageBroker, StorageBroker>();
         }
 
         private static void AddBrokers(IServiceCollection services)
         {
+            services.AddTransient<IStudentService, StudentService>();
         }
     }
 }
