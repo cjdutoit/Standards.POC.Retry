@@ -60,44 +60,4 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
             }
         }
     }
-
-    public static class Retry
-    {
-        public static Func<TArg, TResult> RetryIfFailed<TArg, TResult>
-                          (this Func<TArg, TResult> func,
-            int maxRetry,
-            TimeSpan delayBetweenRetries,
-            params Type[] retryExceptionTypes)
-        {
-            return (arg) =>
-            {
-                var attempts = 0;
-
-                while (true)
-                {
-                    try
-                    {
-                        attempts++;
-                        return func(arg);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (retryExceptionTypes.Any(exception => exception == ex.GetType()))
-                        {
-                            if (attempts == maxRetry)
-                            {
-                                throw;
-                            }
-
-                            Task.Delay(delayBetweenRetries).Wait();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-            };
-        }
-    }
 }

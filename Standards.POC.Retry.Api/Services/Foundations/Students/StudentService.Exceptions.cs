@@ -18,7 +18,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 {
     public partial class StudentService
     {
-        private delegate ValueTask<Student> ReturningStudentFunction();
+        public delegate ValueTask<Student> ReturningStudentFunction();
         private delegate IQueryable<Student> ReturningStudentsFunction();
 
         private async ValueTask<Student> TryCatch(ReturningStudentFunction returningStudentFunction)
