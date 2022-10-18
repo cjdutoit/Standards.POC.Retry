@@ -53,6 +53,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
                     .SelectStudentByIdAsync(studentId);
 
                 ValidateStorageStudent(maybeStudent, studentId);
+                ValidateRetrievedStudent(maybeStudent);
 
                 return maybeStudent;
             });

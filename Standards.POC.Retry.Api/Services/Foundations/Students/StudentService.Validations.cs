@@ -1,6 +1,11 @@
+// ---------------------------------------------------------------
+// Copyright (c) Christo du Toit. All rights reserved.
+// Licensed under the MIT License.
+// See License.txt in the project root for license information.
+// ---------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Standards.POC.Retry.Api.Models.Students;
 using Standards.POC.Retry.Api.Models.Students.Exceptions;
 
@@ -10,7 +15,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
     {
         private IEnumerable<(dynamic Rule, string Parameter)> SharedValidations(Student student)
         {
-            List<(dynamic Rule, string Parameter)> sharedValidations = 
+            List<(dynamic Rule, string Parameter)> sharedValidations =
                 new List<(dynamic Rule, string Parameter)>{
                     (Rule: IsInvalid(student.Id), Parameter: nameof(Student.Id)),
 
@@ -24,7 +29,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 
             return sharedValidations;
         }
-        
+
         private void ValidateStudentOnAdd(Student student)
         {
             ValidateStudentIsNotNull(student);
@@ -61,6 +66,11 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
                 Parameter: nameof(Student.UpdatedDate)),
 
                 (Rule: IsNotRecent(student.UpdatedDate), Parameter: nameof(student.UpdatedDate)));
+        }
+
+        private void ValidateRetrievedStudent(Student student)
+        {
+            Validate(SharedValidations(student));
         }
 
         public void ValidateStudentId(Guid studentId) =>
@@ -173,7 +183,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 
             Validate(allValidations.ToArray());
         }
-        
+
         private static void Validate(params (dynamic Rule, string Parameter)[] validations)
         {
             var invalidStudentException = new InvalidStudentException();

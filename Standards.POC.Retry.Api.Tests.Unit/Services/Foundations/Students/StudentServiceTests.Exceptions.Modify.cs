@@ -308,11 +308,7 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
 
             this.dateTimeBrokerMock.Verify(broker =>
                 broker.GetCurrentDateTimeOffset(),
-                    Times.Exactly(3));
-
-            this.loggingBrokerMock.Verify(broker =>
-                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
-                        Times.Exactly(3));
+                    Times.Once);
 
             this.storageBrokerMock.Verify(broker =>
                 broker.SelectStudentByIdAsync(randomStudent.Id),
@@ -363,11 +359,7 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
 
             this.dateTimeBrokerMock.Verify(broker =>
                 broker.GetCurrentDateTimeOffset(),
-                    Times.Exactly(3));
-
-            this.loggingBrokerMock.Verify(broker =>
-                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
-                        Times.Exactly(3));
+                    Times.Once);
 
             this.storageBrokerMock.Verify(broker =>
                 broker.SelectStudentByIdAsync(randomStudent.Id),

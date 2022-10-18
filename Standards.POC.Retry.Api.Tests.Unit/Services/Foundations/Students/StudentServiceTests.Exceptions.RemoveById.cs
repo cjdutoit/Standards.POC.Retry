@@ -237,11 +237,7 @@ namespace Standards.POC.Retry.Api.Tests.Unit.Services.Foundations.Students
 
             this.storageBrokerMock.Verify(broker =>
                 broker.SelectStudentByIdAsync(It.IsAny<Guid>()),
-                    Times.Exactly(3));
-
-            this.loggingBrokerMock.Verify(broker =>
-                broker.LogInformation(It.Is<string>(message => message.StartsWith("Error found. Retry attempt"))),
-                        Times.Exactly(3));
+                    Times.Once);
 
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogError(It.Is(SameExceptionAs(

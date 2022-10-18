@@ -16,7 +16,7 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
     public partial class StudentService
     {
         private readonly int retriesAllowed = 3;
-        private readonly TimeSpan delayBetweenRetries = TimeSpan.FromSeconds(3);
+        private readonly TimeSpan delayBetweenRetries = TimeSpan.FromMilliseconds(3);
 
         private readonly List<Type> retryExceptionTypes =
             new List<Type>() { typeof(DbUpdateException), typeof(DbUpdateConcurrencyException) };
