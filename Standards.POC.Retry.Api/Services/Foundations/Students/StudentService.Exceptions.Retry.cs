@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Standards.POC.Retry.Api.Models.Students;
+using static Standards.POC.Retry.Api.Services.Foundations.Students.StudentService;
 
 namespace Standards.POC.Retry.Api.Services.Foundations.Students
 {
@@ -63,22 +64,28 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
 
     public static class Retry
     {
-        public static Func<TArg, TResult> RetryIfFailed<TArg, TResult>
-                          (this Func<TArg, TResult> func,
-            int maxRetry,
-            TimeSpan delayBetweenRetries,
-            params Type[] retryExceptionTypes)
+        public static ValueTask<Student> RetryIfFailed
+                          (this ReturningStudentFunction func)
         {
-            return (arg) =>
+            return () =>
             {
                 var attempts = 0;
+                int maxRetry = 3;
+                TimeSpan delayBetweenRetries = TimeSpan.FromMicroseconds(3);
+
+                List<Type> retryExceptionTypes =
+                    new List<Type>()
+                    {
+                        typeof(DbUpdateException),
+                        typeof(DbUpdateConcurrencyException)
+                    };
 
                 while (true)
                 {
                     try
                     {
                         attempts++;
-                        return func(arg);
+                        return func();
                     }
                     catch (Exception ex)
                     {
