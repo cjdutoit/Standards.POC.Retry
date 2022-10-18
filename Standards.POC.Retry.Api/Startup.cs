@@ -6,13 +6,17 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
 using Standards.POC.Retry.Api.Brokers.DateTimes;
 using Standards.POC.Retry.Api.Brokers.Loggings;
 using Standards.POC.Retry.Api.Brokers.Storages;
+using Standards.POC.Retry.Api.Models.Students;
 using Standards.POC.Retry.Api.Services.Foundations.Students;
 
 namespace Standards.POC.Retry.Api
@@ -29,7 +33,13 @@ namespace Standards.POC.Retry.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
-            services.AddControllers();
+            services.AddControllers().AddOData(options =>
+            {
+                options
+                .AddRouteComponents("odata", GetEdmModel())
+                .Select().Filter().Expand().OrderBy().Count().SetMaxTop(25);
+            });
+
             services.AddDbContext<StorageBroker>();
             AddBrokers(services);
             AddServices(services);
@@ -47,6 +57,7 @@ namespace Standards.POC.Retry.Api
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Standards.POC.Retry.Api v1"));
+                app.UseODataRouteDebug();
             }
 
             app.UseHttpsRedirection();
@@ -65,6 +76,14 @@ namespace Standards.POC.Retry.Api
         private static void AddBrokers(IServiceCollection services)
         {
             services.AddTransient<IStudentService, StudentService>();
+        }
+
+        private IEdmModel GetEdmModel()
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            builder.EntitySet<Student>("Students");
+
+            return builder.GetEdmModel();
         }
     }
 }
