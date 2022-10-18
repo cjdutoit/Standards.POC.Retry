@@ -61,7 +61,7 @@ namespace Standards.POC.Retry.Api.Controllers
 
         [HttpGet]
         [EnableQuery]
-        public ActionResult<IQueryable<Student>> GetAllStudents()
+        public ActionResult<IQueryable<Student>> Get()
         {
             try
             {
