@@ -19,7 +19,11 @@ namespace Standards.POC.Retry.Api.Services.Foundations.Students
         private readonly TimeSpan delayBetweenRetries = TimeSpan.FromMilliseconds(3);
 
         private readonly List<Type> retryExceptionTypes =
-            new List<Type>() { typeof(DbUpdateException), typeof(DbUpdateConcurrencyException) };
+            new List<Type>()
+            {
+                typeof(DbUpdateException),
+                typeof(DbUpdateConcurrencyException)
+            };
 
         private async ValueTask<Student> WithRetry(ReturningStudentFunction returningStudentFunction)
         {
